@@ -2,7 +2,6 @@ package com.xkzhangsan.thread.pool.monitor;
 
 import com.xkzhangsan.thread.pool.monitor.constant.MonitorLevelEnum;
 
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -18,7 +17,7 @@ public class ThreadPoolMonitor extends ThreadPoolExecutor {
 
     private MonitorLevelEnum monitorLevel = MonitorLevelEnum.NONE;
 
-    private ConcurrentHashMap<String, Date> taskStartTimeMap;
+    private ConcurrentHashMap<String, Long> taskStartTimeMap;
 
     public ThreadPoolMonitor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue);
@@ -61,18 +60,18 @@ public class ThreadPoolMonitor extends ThreadPoolExecutor {
     protected void beforeExecute(Thread t, Runnable r) {
         if (isTaskMonitor()) {
             //TODO 增加线程名称
-            taskStartTimeMap.put(String.valueOf(r.hashCode()), new Date());
+            taskStartTimeMap.put(String.valueOf(r.hashCode()), System.currentTimeMillis());
         }
     }
 
     @Override
     protected void afterExecute(Runnable r, Throwable t) {
         if (isTaskMonitor()) {
-            Date date = taskStartTimeMap.remove(String.valueOf(r.hashCode()));
-            if (date == null) {
+            Long startTime = taskStartTimeMap.remove(String.valueOf(r.hashCode()));
+            if (startTime == null) {
                 return;
             }
-            System.out.println("poolName:" + poolName + " task:" + r.hashCode() + " cost:" + ((new Date()).getTime() - date.getTime()));
+            System.out.println("poolName:" + poolName + " task:" + r.hashCode() + " cost:" + (System.currentTimeMillis() - startTime));
         }
     }
 
