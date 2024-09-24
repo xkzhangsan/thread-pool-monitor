@@ -6,6 +6,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.*;
 
+/**
+ * 线程池监控器 <br>
+ * 支持监控基本情况和任务执行情况<br>
+ * @author xkzhangsan
+ */
 public class ThreadPoolMonitor extends ThreadPoolExecutor {
 
     private String poolName;
