@@ -15,7 +15,7 @@ public class ThreadPoolMonitor extends ThreadPoolExecutor {
 
     private String poolName;
 
-    private MonitorLevelEnum monitorLevel;
+    private MonitorLevelEnum monitorLevel = MonitorLevelEnum.NONE;
 
     private ConcurrentHashMap<String, Date> taskStartTimeMap;
 
