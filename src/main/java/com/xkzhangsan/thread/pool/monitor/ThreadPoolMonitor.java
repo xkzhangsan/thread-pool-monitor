@@ -170,6 +170,16 @@ public class ThreadPoolMonitor extends ThreadPoolExecutor {
         return this.queueCapacity;
     }
 
+    public String getStatus() {
+        if (super.isTerminated()) {
+            return "Terminated";
+        } else if (super.isShutdown()) {
+            return "Shutting down";
+        } else {
+            return "Running";
+        }
+    }
+
     private boolean isTaskMonitor() {
         return monitorLevel == MonitorLevelEnum.TASK || monitorLevel == MonitorLevelEnum.POOL_TASK;
     }

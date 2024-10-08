@@ -47,7 +47,7 @@ public class GlobalMonitor {
             threadPoolMonitorMap.forEach((k, v) -> {
                 int currentPoolSize = v.getPoolSize();
                 int queueSize = v.getQueue().size();
-                System.out.println("poolName:" + k + " corePoolSize:" + v.getCorePoolSize() + " maximumPoolSize:"
+                System.out.println("poolName:" + k + " status:" + v.getStatus() + " corePoolSize:" + v.getCorePoolSize() + " maximumPoolSize:"
                         + v.getMaximumPoolSize() + " currentPoolSize:" + currentPoolSize + " queueCapacity:" + v.getQueueCapacity()
                         + " queueSize:" + queueSize);
                 if (v.getPoolSizePercentageAlarm() > 0) {
