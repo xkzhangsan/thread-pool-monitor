@@ -13,11 +13,34 @@ import java.util.concurrent.*;
  */
 public class ThreadPoolMonitor extends ThreadPoolExecutor {
 
+    /**
+     * 线程池名称
+     */
     private String poolName;
-
+    /**
+     * 线程池监控级别，默认不监控
+     */
     private MonitorLevelEnum monitorLevel = MonitorLevelEnum.NONE;
-
+    /**
+     * 任务开始时间map
+     */
     private ConcurrentHashMap<String, Long> taskStartTimeMap;
+    /**
+     * 线程池线程数量百分比告警值，比如 0.95
+     */
+    private double poolSizePercentageAlarm;
+    /**
+     * 线程池队列数量百分比告警值，比如 0.95
+     */
+    private double queueSizePercentageAlarm;
+    /**
+     * 线程池任务耗时告警值，单位毫秒
+     */
+    private long taskCostAlarm;
+    /**
+     * 队列最大值
+     */
+    private int queueCapacity;
 
     public ThreadPoolMonitor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue);
@@ -36,6 +59,11 @@ public class ThreadPoolMonitor extends ThreadPoolExecutor {
     }
 
     //overload
+    public ThreadPoolMonitor(int corePoolSize, int maximumPoolSize, BlockingQueue<Runnable> workQueue, String poolName, MonitorLevelEnum monitorLevel) {
+        super(corePoolSize, maximumPoolSize, 0, TimeUnit.MILLISECONDS, workQueue);
+        init(poolName, monitorLevel);
+    }
+
     public ThreadPoolMonitor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, String poolName, MonitorLevelEnum monitorLevel) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue);
         init(poolName, monitorLevel);
@@ -71,7 +99,11 @@ public class ThreadPoolMonitor extends ThreadPoolExecutor {
             if (startTime == null) {
                 return;
             }
-            System.out.println("poolName:" + poolName + " task:" + r.hashCode() + " cost:" + (System.currentTimeMillis() - startTime));
+            long cost = System.currentTimeMillis() - startTime;
+            System.out.println("poolName:" + poolName + " task:" + r.hashCode() + " cost:" + cost);
+            if (taskCostAlarm > 0 && cost > taskCostAlarm) {
+                System.out.println("===== taskCost warning poolName:" + poolName + " task:" + r.hashCode() + " taskCostAlarm:" + taskCostAlarm + " cost:" + cost);
+            }
         }
     }
 
@@ -89,15 +121,61 @@ public class ThreadPoolMonitor extends ThreadPoolExecutor {
         return runnableList;
     }
 
+    public ThreadPoolMonitor poolSizePercentageAlarm(double pooSizePercentageAlarm) {
+        this.poolSizePercentageAlarm = pooSizePercentageAlarm;
+        return this;
+    }
+
+    public ThreadPoolMonitor queueSizePercentageAlarm(double queueSizePercentageAlarm) {
+        this.queueSizePercentageAlarm = queueSizePercentageAlarm;
+        return this;
+    }
+
+    public ThreadPoolMonitor taskCostAlarm(long taskCostAlarm) {
+        this.taskCostAlarm = taskCostAlarm;
+        return this;
+    }
+
+    public String getPoolName() {
+        return poolName;
+    }
+
+    public MonitorLevelEnum getMonitorLevel() {
+        return monitorLevel;
+    }
+
+    public double getPoolSizePercentageAlarm() {
+        return poolSizePercentageAlarm;
+    }
+
+    public double getQueueSizePercentageAlarm() {
+        return queueSizePercentageAlarm;
+    }
+
+    public long getTaskCostAlarm() {
+        return taskCostAlarm;
+    }
+
     private void init(String poolName, MonitorLevelEnum monitorLevel) {
         this.poolName = poolName;
         this.monitorLevel = monitorLevel;
         this.taskStartTimeMap = new ConcurrentHashMap<>();
+        if (isPoolMonitor()) {
+            GlobalMonitor.getInstance().add(poolName, this);
+        }
+        this.queueCapacity = super.getQueue().remainingCapacity();
+    }
+
+    public int getQueueCapacity() {
+        return this.queueCapacity;
     }
 
     private boolean isTaskMonitor() {
-        return monitorLevel == MonitorLevelEnum.TASK || monitorLevel == MonitorLevelEnum.POOL_TASK
-                || monitorLevel == MonitorLevelEnum.SUGGESTION;
+        return monitorLevel == MonitorLevelEnum.TASK || monitorLevel == MonitorLevelEnum.POOL_TASK;
+    }
+
+    private boolean isPoolMonitor() {
+        return monitorLevel == MonitorLevelEnum.POOL || monitorLevel == MonitorLevelEnum.POOL_TASK;
     }
 
 }

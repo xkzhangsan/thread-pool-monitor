@@ -2,6 +2,7 @@ package com.xkzhangsan.thread.pool.monitor.constant;
 
 /**
  * 线程池监控级别 <br>
+ *
  * @author xkzhangsan
  */
 public enum MonitorLevelEnum {
@@ -20,9 +21,5 @@ public enum MonitorLevelEnum {
     /**
      * 同时监控基本信息和任务信息
      */
-    POOL_TASK,
-    /**
-     * 同时监控基本信息和任务信息，并给出优化建议
-     */
-    SUGGESTION;
+    POOL_TASK;
 }
