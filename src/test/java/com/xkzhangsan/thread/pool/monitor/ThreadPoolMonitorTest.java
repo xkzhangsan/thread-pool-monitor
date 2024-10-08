@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 public class ThreadPoolMonitorTest {
 
     public static void main(String[] args) {
-        queueAlarm();
+        poolQueueAlarm();
     }
 
     public static void taskMonitor() {
@@ -59,7 +59,7 @@ public class ThreadPoolMonitorTest {
         threadPoolMonitor.shutdown();
     }
 
-    public static void poolAlarm() {
+    public static void poolSizeAlarm() {
         ThreadPoolMonitor threadPoolMonitor = new ThreadPoolMonitor(1, 3,
                 new ArrayBlockingQueue<>(100), "test", MonitorLevelEnum.POOL_TASK)
                 .poolSizePercentageAlarm(0.2);
@@ -95,7 +95,7 @@ public class ThreadPoolMonitorTest {
         threadPoolMonitor.shutdown();
     }
 
-    public static void queueAlarm() {
+    public static void poolQueueAlarm() {
         ThreadPoolMonitor threadPoolMonitor = new ThreadPoolMonitor(1, 3,
                 new ArrayBlockingQueue<>(100), "test", MonitorLevelEnum.POOL_TASK)
                 .queueSizePercentageAlarm(0.8);

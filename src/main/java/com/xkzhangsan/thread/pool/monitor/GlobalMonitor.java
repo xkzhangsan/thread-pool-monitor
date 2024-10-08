@@ -45,17 +45,19 @@ public class GlobalMonitor {
         @Override
         public void run() {
             threadPoolMonitorMap.forEach((k, v) -> {
+                int currentPoolSize = v.getPoolSize();
+                int queueSize = v.getQueue().size();
                 System.out.println("poolName:" + k + " corePoolSize:" + v.getCorePoolSize() + " maximumPoolSize:"
-                        + v.getMaximumPoolSize() + " currentSize:" + v.getPoolSize() + " queueCapacity:" + v.getQueueCapacity()
-                        + " queueSize:" + v.getQueue().size());
+                        + v.getMaximumPoolSize() + " currentPoolSize:" + currentPoolSize + " queueCapacity:" + v.getQueueCapacity()
+                        + " queueSize:" + queueSize);
                 if (v.getPoolSizePercentageAlarm() > 0) {
-                    double percent = (double) v.getPoolSize() / v.getMaximumPoolSize();
+                    double percent = (double) currentPoolSize / v.getMaximumPoolSize();
                     if (percent > v.getPoolSizePercentageAlarm()) {
                         System.out.println("===== poolSize warning poolName:" + k + " poolSizePercentageAlarm:" + v.getPoolSizePercentageAlarm() + " percent:" + percent);
                     }
                 }
                 if (v.getQueueSizePercentageAlarm() > 0) {
-                    double percent = (double) v.getQueue().size() / v.getQueueCapacity();
+                    double percent = (double) queueSize / v.getQueueCapacity();
                     if (percent > v.getQueueSizePercentageAlarm()) {
                         System.out.println("===== queueSize warning poolName:" + k + " queueSizePercentageAlarm:" + v.getQueueSizePercentageAlarm() + " percent:" + percent);
                     }
