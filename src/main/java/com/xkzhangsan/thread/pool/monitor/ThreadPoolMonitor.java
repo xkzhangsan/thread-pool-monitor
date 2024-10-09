@@ -1,6 +1,10 @@
 package com.xkzhangsan.thread.pool.monitor;
 
 import com.xkzhangsan.thread.pool.monitor.constant.MonitorLevelEnum;
+import com.xkzhangsan.thread.pool.monitor.rejected.AbortPolicyAlarm;
+import com.xkzhangsan.thread.pool.monitor.rejected.CallerRunsPolicyAlarm;
+import com.xkzhangsan.thread.pool.monitor.rejected.DiscardOldestPolicyAlarm;
+import com.xkzhangsan.thread.pool.monitor.rejected.DiscardPolicyAlarm;
 
 import java.util.List;
 import java.util.concurrent.*;
@@ -41,6 +45,14 @@ public class ThreadPoolMonitor extends ThreadPoolExecutor {
      * 队列最大值
      */
     private int queueCapacity;
+    /**
+     * 是否支持任务拒绝告警
+     */
+    private boolean rejectedAlarm;
+
+    public ThreadPoolMonitor(int corePoolSize, int maximumPoolSize, BlockingQueue<Runnable> workQueue) {
+        super(corePoolSize, maximumPoolSize, 0, TimeUnit.MILLISECONDS, workQueue);
+    }
 
     public ThreadPoolMonitor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue);
@@ -61,6 +73,11 @@ public class ThreadPoolMonitor extends ThreadPoolExecutor {
     //overload
     public ThreadPoolMonitor(int corePoolSize, int maximumPoolSize, BlockingQueue<Runnable> workQueue, String poolName, MonitorLevelEnum monitorLevel) {
         super(corePoolSize, maximumPoolSize, 0, TimeUnit.MILLISECONDS, workQueue);
+        init(poolName, monitorLevel);
+    }
+
+    public ThreadPoolMonitor(int corePoolSize, int maximumPoolSize, BlockingQueue<Runnable> workQueue, RejectedExecutionHandler handler, String poolName, MonitorLevelEnum monitorLevel) {
+        super(corePoolSize, maximumPoolSize, 0, TimeUnit.MILLISECONDS, workQueue, handler);
         init(poolName, monitorLevel);
     }
 
@@ -133,6 +150,23 @@ public class ThreadPoolMonitor extends ThreadPoolExecutor {
 
     public ThreadPoolMonitor taskCostAlarm(long taskCostAlarm) {
         this.taskCostAlarm = taskCostAlarm;
+        return this;
+    }
+
+    public ThreadPoolMonitor rejectedAlarm(boolean rejectedAlarm) {
+        this.rejectedAlarm = rejectedAlarm;
+        if (rejectedAlarm) {
+            RejectedExecutionHandler rejectedExecutionHandler = super.getRejectedExecutionHandler();
+            if (rejectedExecutionHandler.getClass().equals(AbortPolicy.class)) {
+                super.setRejectedExecutionHandler(new AbortPolicyAlarm());
+            } else if (rejectedExecutionHandler.getClass().equals(DiscardOldestPolicy.class)) {
+                super.setRejectedExecutionHandler(new DiscardOldestPolicyAlarm());
+            } else if (rejectedExecutionHandler.getClass().equals(DiscardPolicy.class)) {
+                super.setRejectedExecutionHandler(new DiscardPolicyAlarm());
+            } else if (rejectedExecutionHandler.getClass().equals(CallerRunsPolicy.class)) {
+                super.setRejectedExecutionHandler(new CallerRunsPolicyAlarm());
+            }
+        }
         return this;
     }
 
