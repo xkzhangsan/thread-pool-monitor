@@ -66,7 +66,4 @@ public class GlobalMonitor {
         }
     }
 
-    public static void main(String[] args) {
-        GlobalMonitor.getInstance().print();
-    }
 }
