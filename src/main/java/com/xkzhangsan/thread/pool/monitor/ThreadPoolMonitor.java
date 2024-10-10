@@ -127,16 +127,16 @@ public class ThreadPoolMonitor extends ThreadPoolExecutor {
     @Override
     public void shutdown() {
         super.shutdown();
-        //停止时，已经提交未完成的任务仍在运行，不能清理taskStartTimeMap缓存
+        end();
     }
 
     @Override
     public List<Runnable> shutdownNow() {
         List<Runnable> runnableList = super.shutdownNow();
-        //停止时，终止所有任务，需要清理taskStartTimeMap缓存，否则会导致内存泄漏
-        taskStartTimeMap = null;
+        end();
         return runnableList;
     }
+
 
     public ThreadPoolMonitor poolSizePercentageAlarm(double pooSizePercentageAlarm) {
         this.poolSizePercentageAlarm = pooSizePercentageAlarm;
@@ -195,7 +195,7 @@ public class ThreadPoolMonitor extends ThreadPoolExecutor {
         this.monitorLevel = monitorLevel;
         this.taskStartTimeMap = new ConcurrentHashMap<>();
         if (isPoolMonitor()) {
-            GlobalMonitor.getInstance().add(poolName, this);
+            GlobalMonitor.getInstance().put(poolName, this);
         }
         this.queueCapacity = super.getQueue().remainingCapacity();
     }
@@ -220,6 +220,15 @@ public class ThreadPoolMonitor extends ThreadPoolExecutor {
 
     private boolean isPoolMonitor() {
         return monitorLevel == MonitorLevelEnum.POOL || monitorLevel == MonitorLevelEnum.POOL_TASK;
+    }
+
+    private void end() {
+        //停止时，需要清理taskStartTimeMap缓存，否则会导致内存泄漏
+        taskStartTimeMap = null;
+        //停止时，需要清理threadPoolMonitorMap缓存，否则会导致内存泄漏
+        if (isPoolMonitor()) {
+            GlobalMonitor.getInstance().remove(poolName);
+        }
     }
 
 }

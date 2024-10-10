@@ -32,34 +32,34 @@ public class GlobalMonitor {
         return instance;
     }
 
-    public void print() {
-        System.out.println("instance start");
+    public void put(String poolName, ThreadPoolMonitor threadPoolMonitor) {
+        threadPoolMonitorMap.put(poolName, threadPoolMonitor);
     }
 
-    public void add(String poolName, ThreadPoolMonitor threadPoolMonitor) {
-        threadPoolMonitorMap.put(poolName, threadPoolMonitor);
+    public void remove(String poolName) {
+        threadPoolMonitorMap.remove(poolName);
     }
 
     static class PoolInfoRunnable implements Runnable {
 
         @Override
         public void run() {
-            threadPoolMonitorMap.forEach((k, v) -> {
-                int currentPoolSize = v.getPoolSize();
-                int queueSize = v.getQueue().size();
-                System.out.println("poolName:" + k + " status:" + v.getStatus() + " corePoolSize:" + v.getCorePoolSize() + " maximumPoolSize:"
-                        + v.getMaximumPoolSize() + " currentPoolSize:" + currentPoolSize + " queueCapacity:" + v.getQueueCapacity()
+            threadPoolMonitorMap.forEach((poolName, threadPoolMonitor) -> {
+                int currentPoolSize = threadPoolMonitor.getPoolSize();
+                int queueSize = threadPoolMonitor.getQueue().size();
+                System.out.println("poolName:" + poolName + " status:" + threadPoolMonitor.getStatus() + " corePoolSize:" + threadPoolMonitor.getCorePoolSize() + " maximumPoolSize:"
+                        + threadPoolMonitor.getMaximumPoolSize() + " currentPoolSize:" + currentPoolSize + " queueCapacity:" + threadPoolMonitor.getQueueCapacity()
                         + " queueSize:" + queueSize);
-                if (v.getPoolSizePercentageAlarm() > 0) {
-                    double percent = (double) currentPoolSize / v.getMaximumPoolSize();
-                    if (percent > v.getPoolSizePercentageAlarm()) {
-                        System.out.println("===== poolSize warning poolName:" + k + " poolSizePercentageAlarm:" + v.getPoolSizePercentageAlarm() + " percent:" + percent);
+                if (threadPoolMonitor.getPoolSizePercentageAlarm() > 0) {
+                    double percent = (double) currentPoolSize / threadPoolMonitor.getMaximumPoolSize();
+                    if (percent > threadPoolMonitor.getPoolSizePercentageAlarm()) {
+                        System.out.println("===== poolSize warning poolName:" + poolName + " poolSizePercentageAlarm:" + threadPoolMonitor.getPoolSizePercentageAlarm() + " percent:" + percent);
                     }
                 }
-                if (v.getQueueSizePercentageAlarm() > 0) {
-                    double percent = (double) queueSize / v.getQueueCapacity();
-                    if (percent > v.getQueueSizePercentageAlarm()) {
-                        System.out.println("===== queueSize warning poolName:" + k + " queueSizePercentageAlarm:" + v.getQueueSizePercentageAlarm() + " percent:" + percent);
+                if (threadPoolMonitor.getQueueSizePercentageAlarm() > 0) {
+                    double percent = (double) queueSize / threadPoolMonitor.getQueueCapacity();
+                    if (percent > threadPoolMonitor.getQueueSizePercentageAlarm()) {
+                        System.out.println("===== queueSize warning poolName:" + poolName + " queueSizePercentageAlarm:" + threadPoolMonitor.getQueueSizePercentageAlarm() + " percent:" + percent);
                     }
                 }
             });
