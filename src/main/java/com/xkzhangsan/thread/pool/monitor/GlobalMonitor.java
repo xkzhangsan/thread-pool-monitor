@@ -13,12 +13,14 @@ import java.util.concurrent.TimeUnit;
  * @author xkzhangsan
  */
 public class GlobalMonitor {
+    public static final long POOL_MONITOR_PERIOD = 10;
+    public static final long ALARM_PERIOD = 300000;
     private static volatile GlobalMonitor instance;
     private static final ConcurrentHashMap<String, ThreadPoolMonitor> threadPoolMonitorMap = new ConcurrentHashMap<>();
     private static final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1);
 
     private GlobalMonitor() {
-        scheduledThreadPoolExecutor.scheduleAtFixedRate(new PoolInfoRunnable(), 10, 10, TimeUnit.SECONDS);
+        scheduledThreadPoolExecutor.scheduleAtFixedRate(new PoolInfoRunnable(), POOL_MONITOR_PERIOD, POOL_MONITOR_PERIOD, TimeUnit.SECONDS);
     }
 
     public static GlobalMonitor getInstance() {
@@ -53,7 +55,17 @@ public class GlobalMonitor {
                 if (threadPoolMonitor.getPoolSizePercentageAlarm() > 0) {
                     double percent = (double) currentPoolSize / threadPoolMonitor.getMaximumPoolSize();
                     if (percent > threadPoolMonitor.getPoolSizePercentageAlarm()) {
-                        System.out.println("===== poolSize warning poolName:" + poolName + " poolSizePercentageAlarm:" + threadPoolMonitor.getPoolSizePercentageAlarm() + " percent:" + percent);
+                        if (threadPoolMonitor.isPoolSizeAlarmRestrainFlag()) {
+                            if (threadPoolMonitor.getPoolSizeAlarmTimestamp() == 0) {
+                                threadPoolMonitor.setPoolSizeAlarmTimestamp(System.currentTimeMillis());
+                                System.out.println("===== poolSize warning poolName:" + poolName + " poolSizePercentageAlarm:" + threadPoolMonitor.getPoolSizePercentageAlarm() + " percent:" + percent);
+                            } else if (System.currentTimeMillis() - threadPoolMonitor.getPoolSizeAlarmTimestamp() > ALARM_PERIOD) {
+                                threadPoolMonitor.setPoolSizeAlarmTimestamp(0);
+                                System.out.println("===== poolSize warning poolName:" + poolName + " poolSizePercentageAlarm:" + threadPoolMonitor.getPoolSizePercentageAlarm() + " percent:" + percent);
+                            }
+                        } else {
+                            System.out.println("===== poolSize warning poolName:" + poolName + " poolSizePercentageAlarm:" + threadPoolMonitor.getPoolSizePercentageAlarm() + " percent:" + percent);
+                        }
                     }
                 }
                 if (threadPoolMonitor.getQueueSizePercentageAlarm() > 0) {

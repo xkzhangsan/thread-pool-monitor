@@ -34,6 +34,14 @@ public class ThreadPoolMonitor extends ThreadPoolExecutor {
      */
     private double poolSizePercentageAlarm;
     /**
+     * 线程池线程数量告警时间戳
+     */
+    private long poolSizeAlarmTimestamp;
+    /**
+     * 线程池线程数量告警抑制开关
+     */
+    private boolean poolSizeAlarmRestrainFlag;
+    /**
      * 线程池队列数量百分比告警值，比如 0.95
      */
     private double queueSizePercentageAlarm;
@@ -145,6 +153,23 @@ public class ThreadPoolMonitor extends ThreadPoolExecutor {
 
     public ThreadPoolMonitor queueSizePercentageAlarm(double queueSizePercentageAlarm) {
         this.queueSizePercentageAlarm = queueSizePercentageAlarm;
+        return this;
+    }
+
+    public long getPoolSizeAlarmTimestamp() {
+        return poolSizeAlarmTimestamp;
+    }
+
+    public void setPoolSizeAlarmTimestamp(long poolSizeAlarmTimestamp) {
+        this.poolSizeAlarmTimestamp = poolSizeAlarmTimestamp;
+    }
+
+    public boolean isPoolSizeAlarmRestrainFlag() {
+        return poolSizeAlarmRestrainFlag;
+    }
+
+    public ThreadPoolMonitor poolSizeAlarmRestrainFlag(boolean poolSizeAlarmRestrainFlag) {
+        this.poolSizeAlarmRestrainFlag = poolSizeAlarmRestrainFlag;
         return this;
     }
 
