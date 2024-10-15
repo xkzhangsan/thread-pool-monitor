@@ -71,7 +71,17 @@ public class GlobalMonitor {
                 if (threadPoolMonitor.getQueueSizePercentageAlarm() > 0) {
                     double percent = (double) queueSize / threadPoolMonitor.getQueueCapacity();
                     if (percent > threadPoolMonitor.getQueueSizePercentageAlarm()) {
-                        System.out.println("===== queueSize warning poolName:" + poolName + " queueSizePercentageAlarm:" + threadPoolMonitor.getQueueSizePercentageAlarm() + " percent:" + percent);
+                        if (threadPoolMonitor.isQueueSizeAlarmRestrainFlag()) {
+                            if (threadPoolMonitor.getQueueSizeAlarmTimestamp() == 0) {
+                                threadPoolMonitor.setQueueSizeAlarmTimestamp(System.currentTimeMillis());
+                                System.out.println("===== queueSize warning poolName:" + poolName + " queueSizePercentageAlarm:" + threadPoolMonitor.getQueueSizePercentageAlarm() + " percent:" + percent);
+                            } else if (System.currentTimeMillis() - threadPoolMonitor.getQueueSizeAlarmTimestamp() > ALARM_PERIOD) {
+                                threadPoolMonitor.setQueueSizeAlarmTimestamp(0);
+                                System.out.println("===== queueSize warning poolName:" + poolName + " queueSizePercentageAlarm:" + threadPoolMonitor.getQueueSizePercentageAlarm() + " percent:" + percent);
+                            }
+                        } else {
+                            System.out.println("===== queueSize warning poolName:" + poolName + " queueSizePercentageAlarm:" + threadPoolMonitor.getQueueSizePercentageAlarm() + " percent:" + percent);
+                        }
                     }
                 }
             });

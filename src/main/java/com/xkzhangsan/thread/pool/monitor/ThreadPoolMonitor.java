@@ -46,6 +46,14 @@ public class ThreadPoolMonitor extends ThreadPoolExecutor {
      */
     private double queueSizePercentageAlarm;
     /**
+     * 线程池队列数量告警时间戳
+     */
+    private long queueSizeAlarmTimestamp;
+    /**
+     * 线程池队列数量告警抑制开关
+     */
+    private boolean queueSizeAlarmRestrainFlag;
+    /**
      * 线程池任务耗时告警值，单位毫秒
      */
     private long taskCostAlarm;
@@ -151,11 +159,6 @@ public class ThreadPoolMonitor extends ThreadPoolExecutor {
         return this;
     }
 
-    public ThreadPoolMonitor queueSizePercentageAlarm(double queueSizePercentageAlarm) {
-        this.queueSizePercentageAlarm = queueSizePercentageAlarm;
-        return this;
-    }
-
     public long getPoolSizeAlarmTimestamp() {
         return poolSizeAlarmTimestamp;
     }
@@ -170,6 +173,28 @@ public class ThreadPoolMonitor extends ThreadPoolExecutor {
 
     public ThreadPoolMonitor poolSizeAlarmRestrainFlag(boolean poolSizeAlarmRestrainFlag) {
         this.poolSizeAlarmRestrainFlag = poolSizeAlarmRestrainFlag;
+        return this;
+    }
+
+    public ThreadPoolMonitor queueSizePercentageAlarm(double queueSizePercentageAlarm) {
+        this.queueSizePercentageAlarm = queueSizePercentageAlarm;
+        return this;
+    }
+
+    public long getQueueSizeAlarmTimestamp() {
+        return queueSizeAlarmTimestamp;
+    }
+
+    public void setQueueSizeAlarmTimestamp(long queueSizeAlarmTimestamp) {
+        this.queueSizeAlarmTimestamp = queueSizeAlarmTimestamp;
+    }
+
+    public boolean isQueueSizeAlarmRestrainFlag() {
+        return queueSizeAlarmRestrainFlag;
+    }
+
+    public ThreadPoolMonitor queueSizeAlarmRestrainFlag(boolean queueSizeAlarmRestrainFlag) {
+        this.queueSizeAlarmRestrainFlag = queueSizeAlarmRestrainFlag;
         return this;
     }
 

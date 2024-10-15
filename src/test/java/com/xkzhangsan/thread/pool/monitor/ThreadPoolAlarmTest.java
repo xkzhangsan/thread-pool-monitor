@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 public class ThreadPoolAlarmTest {
 
     public static void main(String[] args) throws InterruptedException {
-        poolSizeAlarmRestrain();
+        queueSizeAlarmRestrain();
     }
 
     public static void poolSizeAlarm() throws InterruptedException {
@@ -164,6 +164,28 @@ public class ThreadPoolAlarmTest {
                 new ArrayBlockingQueue<>(100), "test", MonitorLevelEnum.POOL)
                 .poolSizePercentageAlarm(0.2)
                 .poolSizeAlarmRestrainFlag(true);
+        for (int i = 0; i < 100; i++) {
+            int finalI = i;
+            threadPoolMonitor.execute(() -> {
+                try {
+                    TimeUnit.SECONDS.sleep(3);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                System.out.println(finalI);
+            });
+        }
+        //因为调用shutdown方法会将threadPoolMonitor从监控缓存中删除，这里sleep 100s
+        TimeUnit.SECONDS.sleep(100);
+        //线程池必须手动关闭，否则一直运行
+        threadPoolMonitor.shutdown();
+    }
+
+    public static void queueSizeAlarmRestrain() throws InterruptedException {
+        ThreadPoolMonitor threadPoolMonitor = new ThreadPoolMonitor(1, 3,
+                new ArrayBlockingQueue<>(100), "test", MonitorLevelEnum.POOL)
+                .queueSizePercentageAlarm(0.8)
+                .queueSizeAlarmRestrainFlag(true);
         for (int i = 0; i < 100; i++) {
             int finalI = i;
             threadPoolMonitor.execute(() -> {
