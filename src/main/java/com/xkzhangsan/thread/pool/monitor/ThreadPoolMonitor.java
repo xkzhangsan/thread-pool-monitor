@@ -58,6 +58,14 @@ public class ThreadPoolMonitor extends ThreadPoolExecutor {
      */
     private long taskCostAlarm;
     /**
+     * 线程池任务耗时告警时间戳，多线程更新使用volatile
+     */
+    private volatile long taskCostAlarmTimestamp;
+    /**
+     * 线程池队列数量告警抑制开关
+     */
+    private boolean taskCostAlarmRestrainFlag;
+    /**
      * 队列最大值
      */
     private int queueCapacity;
@@ -119,6 +127,9 @@ public class ThreadPoolMonitor extends ThreadPoolExecutor {
 
     @Override
     protected void beforeExecute(Thread t, Runnable r) {
+        if (taskStartTimeMap == null) {
+            return;
+        }
         if (isTaskMonitor()) {
             //TODO 增加线程名称
             taskStartTimeMap.put(String.valueOf(r.hashCode()), System.currentTimeMillis());
@@ -127,6 +138,9 @@ public class ThreadPoolMonitor extends ThreadPoolExecutor {
 
     @Override
     protected void afterExecute(Runnable r, Throwable t) {
+        if (taskStartTimeMap == null) {
+            return;
+        }
         if (isTaskMonitor()) {
             Long startTime = taskStartTimeMap.remove(String.valueOf(r.hashCode()));
             if (startTime == null) {
@@ -135,7 +149,18 @@ public class ThreadPoolMonitor extends ThreadPoolExecutor {
             long cost = System.currentTimeMillis() - startTime;
             System.out.println("poolName:" + poolName + " task:" + r.hashCode() + " cost:" + cost);
             if (taskCostAlarm > 0 && cost > taskCostAlarm) {
-                System.out.println("===== taskCost warning poolName:" + poolName + " task:" + r.hashCode() + " taskCostAlarm:" + taskCostAlarm + " cost:" + cost);
+                if (isTaskCostAlarmRestrainFlag()) {
+                    long nowTimestamp = System.currentTimeMillis();
+                    if (taskCostAlarmTimestamp == 0) {
+                        System.out.println("===== taskCost warning poolName:" + poolName + " task:" + r.hashCode() + " taskCostAlarm:" + taskCostAlarm + " cost:" + cost);
+                        setTaskCostAlarmTimestamp(nowTimestamp);
+                    } else if (nowTimestamp - taskCostAlarmTimestamp > GlobalMonitor.ALARM_PERIOD) {
+                        setTaskCostAlarmTimestamp(nowTimestamp);
+                        System.out.println("===== taskCost warning poolName:" + poolName + " task:" + r.hashCode() + " taskCostAlarm:" + taskCostAlarm + " cost:" + cost);
+                    }
+                } else {
+                    System.out.println("===== taskCost warning poolName:" + poolName + " task:" + r.hashCode() + " taskCostAlarm:" + taskCostAlarm + " cost:" + cost);
+                }
             }
         }
     }
@@ -195,6 +220,23 @@ public class ThreadPoolMonitor extends ThreadPoolExecutor {
 
     public ThreadPoolMonitor queueSizeAlarmRestrainFlag(boolean queueSizeAlarmRestrainFlag) {
         this.queueSizeAlarmRestrainFlag = queueSizeAlarmRestrainFlag;
+        return this;
+    }
+
+    public long getTaskCostAlarmTimestamp() {
+        return taskCostAlarmTimestamp;
+    }
+
+    public void setTaskCostAlarmTimestamp(long taskCostAlarmTimestamp) {
+        this.taskCostAlarmTimestamp = taskCostAlarmTimestamp;
+    }
+
+    public boolean isTaskCostAlarmRestrainFlag() {
+        return taskCostAlarmRestrainFlag;
+    }
+
+    public ThreadPoolMonitor taskCostAlarmRestrainFlag(boolean taskCostAlarmRestrainFlag) {
+        this.taskCostAlarmRestrainFlag = taskCostAlarmRestrainFlag;
         return this;
     }
 

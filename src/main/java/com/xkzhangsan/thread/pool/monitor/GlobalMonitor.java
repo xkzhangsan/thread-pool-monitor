@@ -56,11 +56,12 @@ public class GlobalMonitor {
                     double percent = (double) currentPoolSize / threadPoolMonitor.getMaximumPoolSize();
                     if (percent > threadPoolMonitor.getPoolSizePercentageAlarm()) {
                         if (threadPoolMonitor.isPoolSizeAlarmRestrainFlag()) {
+                            long nowTimestamp = System.currentTimeMillis();
                             if (threadPoolMonitor.getPoolSizeAlarmTimestamp() == 0) {
-                                threadPoolMonitor.setPoolSizeAlarmTimestamp(System.currentTimeMillis());
                                 System.out.println("===== poolSize warning poolName:" + poolName + " poolSizePercentageAlarm:" + threadPoolMonitor.getPoolSizePercentageAlarm() + " percent:" + percent);
-                            } else if (System.currentTimeMillis() - threadPoolMonitor.getPoolSizeAlarmTimestamp() > ALARM_PERIOD) {
-                                threadPoolMonitor.setPoolSizeAlarmTimestamp(0);
+                                threadPoolMonitor.setPoolSizeAlarmTimestamp(nowTimestamp);
+                            } else if (nowTimestamp - threadPoolMonitor.getPoolSizeAlarmTimestamp() > ALARM_PERIOD) {
+                                threadPoolMonitor.setPoolSizeAlarmTimestamp(nowTimestamp);
                                 System.out.println("===== poolSize warning poolName:" + poolName + " poolSizePercentageAlarm:" + threadPoolMonitor.getPoolSizePercentageAlarm() + " percent:" + percent);
                             }
                         } else {
@@ -71,12 +72,13 @@ public class GlobalMonitor {
                 if (threadPoolMonitor.getQueueSizePercentageAlarm() > 0) {
                     double percent = (double) queueSize / threadPoolMonitor.getQueueCapacity();
                     if (percent > threadPoolMonitor.getQueueSizePercentageAlarm()) {
+                        long nowTimestamp = System.currentTimeMillis();
                         if (threadPoolMonitor.isQueueSizeAlarmRestrainFlag()) {
                             if (threadPoolMonitor.getQueueSizeAlarmTimestamp() == 0) {
-                                threadPoolMonitor.setQueueSizeAlarmTimestamp(System.currentTimeMillis());
                                 System.out.println("===== queueSize warning poolName:" + poolName + " queueSizePercentageAlarm:" + threadPoolMonitor.getQueueSizePercentageAlarm() + " percent:" + percent);
-                            } else if (System.currentTimeMillis() - threadPoolMonitor.getQueueSizeAlarmTimestamp() > ALARM_PERIOD) {
-                                threadPoolMonitor.setQueueSizeAlarmTimestamp(0);
+                                threadPoolMonitor.setQueueSizeAlarmTimestamp(nowTimestamp);
+                            } else if (nowTimestamp - threadPoolMonitor.getQueueSizeAlarmTimestamp() > ALARM_PERIOD) {
+                                threadPoolMonitor.setQueueSizeAlarmTimestamp(nowTimestamp);
                                 System.out.println("===== queueSize warning poolName:" + poolName + " queueSizePercentageAlarm:" + threadPoolMonitor.getQueueSizePercentageAlarm() + " percent:" + percent);
                             }
                         } else {
