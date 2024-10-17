@@ -73,6 +73,14 @@ public class ThreadPoolMonitor extends ThreadPoolExecutor {
      * 是否支持任务拒绝告警
      */
     private boolean rejectedAlarm;
+    /**
+     * 任务拒绝告警时间戳，多线程更新使用volatile
+     */
+    private volatile long rejectedAlarmTimestamp;
+    /**
+     * 任务拒绝告警抑制开关
+     */
+    private boolean rejectedAlarmRestrainFlag;
 
     public ThreadPoolMonitor(int corePoolSize, int maximumPoolSize, BlockingQueue<Runnable> workQueue) {
         super(corePoolSize, maximumPoolSize, 0, TimeUnit.MILLISECONDS, workQueue);
@@ -239,6 +247,23 @@ public class ThreadPoolMonitor extends ThreadPoolExecutor {
         return this;
     }
 
+    public long getRejectedAlarmTimestamp() {
+        return rejectedAlarmTimestamp;
+    }
+
+    public void setRejectedAlarmTimestamp(long rejectedAlarmTimestamp) {
+        this.rejectedAlarmTimestamp = rejectedAlarmTimestamp;
+    }
+
+    public boolean isRejectedAlarmRestrainFlag() {
+        return rejectedAlarmRestrainFlag;
+    }
+
+    public ThreadPoolMonitor rejectedAlarmRestrainFlag(boolean rejectedAlarmRestrainFlag) {
+        this.rejectedAlarmRestrainFlag = rejectedAlarmRestrainFlag;
+        return this;
+    }
+
     public ThreadPoolMonitor rejectedAlarm(boolean rejectedAlarm) {
         this.rejectedAlarm = rejectedAlarm;
         if (rejectedAlarm) {
@@ -254,6 +279,10 @@ public class ThreadPoolMonitor extends ThreadPoolExecutor {
             }
         }
         return this;
+    }
+
+    public boolean isRejectedAlarm() {
+        return rejectedAlarm;
     }
 
     public String getPoolName() {
