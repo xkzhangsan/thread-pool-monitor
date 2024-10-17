@@ -127,9 +127,6 @@ public class ThreadPoolMonitor extends ThreadPoolExecutor {
 
     @Override
     protected void beforeExecute(Thread t, Runnable r) {
-        if (taskStartTimeMap == null) {
-            return;
-        }
         if (isTaskMonitor()) {
             //TODO 增加线程名称
             taskStartTimeMap.put(String.valueOf(r.hashCode()), System.currentTimeMillis());
@@ -138,9 +135,6 @@ public class ThreadPoolMonitor extends ThreadPoolExecutor {
 
     @Override
     protected void afterExecute(Runnable r, Throwable t) {
-        if (taskStartTimeMap == null) {
-            return;
-        }
         if (isTaskMonitor()) {
             Long startTime = taskStartTimeMap.remove(String.valueOf(r.hashCode()));
             if (startTime == null) {
@@ -168,13 +162,13 @@ public class ThreadPoolMonitor extends ThreadPoolExecutor {
     @Override
     public void shutdown() {
         super.shutdown();
-        end();
+        end(false);
     }
 
     @Override
     public List<Runnable> shutdownNow() {
         List<Runnable> runnableList = super.shutdownNow();
-        end();
+        end(true);
         return runnableList;
     }
 
@@ -314,9 +308,11 @@ public class ThreadPoolMonitor extends ThreadPoolExecutor {
         return monitorLevel == MonitorLevelEnum.POOL || monitorLevel == MonitorLevelEnum.POOL_TASK;
     }
 
-    private void end() {
-        //停止时，需要清理taskStartTimeMap缓存，否则会导致内存泄漏
-        taskStartTimeMap = null;
+    private void end(boolean isNow) {
+        if (isNow) {
+            //停止时，需要清理taskStartTimeMap缓存，否则会导致内存泄漏
+            taskStartTimeMap = null;
+        }
         //停止时，需要清理threadPoolMonitorMap缓存，否则会导致内存泄漏
         if (isPoolMonitor()) {
             GlobalMonitor.getInstance().remove(poolName);
